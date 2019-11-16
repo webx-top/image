@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	ID "git.webx.top/coscms/app/base/lib/image/identicon"
+	ID "github.com/admpub/identicon"
+
 	"github.com/webx-top/com"
 )
 

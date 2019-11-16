@@ -91,19 +91,18 @@ func (w *Watermark) IsAllowExt(ext string) bool {
 
 //MarkFile 给指定的文件打上水印
 func (w *Watermark) MarkFile(path string) error {
-	// 此处不能使用os.O_APPEND 在osx下会造成seek失效。
-	// TODO:验证其它系统的正确性
 	file, err := os.OpenFile(path, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return w.Mark(file, strings.ToLower(filepath.Ext(path)))
+	return w.Mark(file, filepath.Ext(path))
 }
 
 //Mark 将水印写入src中，由ext确定当前图片的类型。
 func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
+	ext = strings.ToLower(ext)
 	var srcImg image.Image
 	var err error
 
@@ -124,6 +123,9 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	var point image.Point
 	srcw := srcImg.Bounds().Dx()
 	srch := srcImg.Bounds().Dy()
+	if srcw/w.image.Bounds().Dx()<3 || srch/w.image.Bounds().Dy()<3{
+		return err
+	}
 	switch w.pos {
 	case TopLeft:
 		point = image.Point{X: -w.padding, Y: -w.padding}
