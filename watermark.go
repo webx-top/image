@@ -1,7 +1,6 @@
 package image
 
 import (
-	"errors"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/admpub/errors"
 )
 
 //Pos 水印的位置
@@ -62,7 +63,7 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	case ".gif":
 		img, err = gif.Decode(f)
 	default:
-		return nil, ErrUnsupportedWatermarkType
+		return nil, errors.WithMessage(ErrUnsupportedWatermarkType, path)
 	}
 	if err != nil {
 		return nil, err
@@ -114,7 +115,7 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	case ".gif":
 		srcImg, err = gif.Decode(src)
 	default:
-		return ErrUnsupportedWatermarkType
+		return errors.WithMessage(ErrUnsupportedWatermarkType, ext)
 	}
 	if err != nil {
 		return err
@@ -123,7 +124,7 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	var point image.Point
 	srcw := srcImg.Bounds().Dx()
 	srch := srcImg.Bounds().Dy()
-	if srcw/w.image.Bounds().Dx()<3 || srch/w.image.Bounds().Dy()<3{
+	if srcw/w.image.Bounds().Dx() < 3 || srch/w.image.Bounds().Dy() < 3 {
 		return err
 	}
 	switch w.pos {
