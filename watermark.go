@@ -48,6 +48,9 @@ var ErrInvalidPos = errors.New(`水印位置不正确`)
 // padding为水印在目标不图像上的留白大小；
 // pos水印的位置。
 func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
+	if pos < TopLeft || pos > Center {
+		return nil, ErrInvalidPos
+	}
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -67,10 +70,6 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	}
 	if err != nil {
 		return nil, err
-	}
-
-	if pos < TopLeft || pos > Center {
-		return nil, ErrInvalidPos
 	}
 
 	return &Watermark{
