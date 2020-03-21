@@ -17,7 +17,7 @@ import (
 	"github.com/admpub/log"
 )
 
-func Encode(r io.Reader, quality float64) (buf *bytes.Buffer, err error) {
+func Encode(r io.Reader, quality float32) (buf *bytes.Buffer, err error) {
 	buf = bytes.NewBuffer(nil)
 	var (
 		img image.Image
@@ -49,7 +49,7 @@ func Encode(r io.Reader, quality float64) (buf *bytes.Buffer, err error) {
 	}
 	options := &webp.Options{
 		Lossless: false, 
-		Quality: float32(quality),
+		Quality: quality,
 	}
 	err = webp.Encode(buf, img, options)
 	return
