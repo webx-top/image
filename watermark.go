@@ -1,6 +1,7 @@
 package image
 
 import (
+	"net/http"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -45,8 +46,13 @@ var (
 	ErrUnsupportedWatermarkType = errors.New(`水印图片格式不支持`)
 	// ErrInvalidPos 水印位置不正确
 	ErrInvalidPos = errors.New(`水印位置不正确`)
-	// WatermarkOpen 水印文件打开方式 
-	WatermarkOpen = os.Open
+	// WatermarkDefaultOpen 水印文件默认打开方式
+	WatermarkDefaultOpen = func(name string) (http.File, error) {
+		fp, err := os.Open(name)
+		return fp, err
+	}
+	// WatermarkOpen 水印文件打开方式
+	WatermarkOpen = WatermarkDefaultOpen
 )
 
 // NewWatermark 设置水印的相关参数。
