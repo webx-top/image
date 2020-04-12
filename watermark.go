@@ -45,6 +45,8 @@ var (
 	ErrUnsupportedWatermarkType = errors.New(`水印图片格式不支持`)
 	// ErrInvalidPos 水印位置不正确
 	ErrInvalidPos = errors.New(`水印位置不正确`)
+	// WatermarkOpen 水印文件打开方式 
+	WatermarkOpen = os.Open
 )
 
 // NewWatermark 设置水印的相关参数。
@@ -55,7 +57,7 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	if pos < TopLeft || pos > Center {
 		return nil, ErrInvalidPos
 	}
-	f, err := os.Open(path)
+	f, err := WatermarkOpen(path)
 	if err != nil {
 		return nil, err
 	}
