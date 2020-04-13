@@ -138,6 +138,20 @@ func GetExtensionByContentType(contentType string) string {
 	}
 }
 
+func IsFormatError(err error) bool {
+	var isFormatError bool
+	switch err.(type) {
+	case png.FormatError, jpeg.FormatError:
+		isFormatError = true
+	default:
+		if err == bmp.ErrUnsupported || strings.Contains(err.Error(), `can't recognize format`) {
+			isFormatError = true
+		}
+	}
+	return isFormatError
+}
+
+
 // Mark 将水印写入src中，由ext确定当前图片的类型。
 func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	ext = strings.ToLower(ext)
@@ -156,16 +170,7 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 		return errors.WithMessage(ErrUnsupportedWatermarkType, ext)
 	}
 	if err != nil {
-		var isFormatError bool
-		switch err.(type) {
-		case png.FormatError, jpeg.FormatError:
-			isFormatError = true
-		default:
-			if err == bmp.ErrUnsupported || strings.Contains(err.Error(), `can't recognize format`) {
-				isFormatError = true
-			}
-		}
-		if isFormatError {
+		if IsFormatError(err) {
 			body := make([]byte,sniffLen)
 			src.Seek(0, 0)
 			if _, err := io.ReadFull(src, body); err!=nil{
