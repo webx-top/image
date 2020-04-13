@@ -151,7 +151,6 @@ func IsFormatError(err error) bool {
 	return isFormatError
 }
 
-
 // Mark 将水印写入src中，由ext确定当前图片的类型。
 func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	ext = strings.ToLower(ext)
@@ -171,9 +170,9 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	}
 	if err != nil {
 		if IsFormatError(err) {
-			body := make([]byte,sniffLen)
+			body := make([]byte, sniffLen)
 			src.Seek(0, 0)
-			if _, err := io.ReadFull(src, body); err!=nil{
+			if _, err := io.ReadFull(src, body); err != nil {
 				return err
 			}
 			contentType := GetContentTypeByContent(body)
