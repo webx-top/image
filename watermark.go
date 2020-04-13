@@ -125,13 +125,13 @@ func GetContentTypeByContent(buffer []byte) string {
 
 func GetExtensionByContentType(contentType string) string {
 	switch {
-	case strings.Contains(contentType, "jpeg"):
+	case strings.Contains(contentType, "image/jpeg"):
 		return ".jpg"
-	case strings.Contains(contentType, "png"):
+	case strings.Contains(contentType, "image/png"):
 		return ".png"
-	case strings.Contains(contentType, "bmp"):
+	case strings.Contains(contentType, "image/bmp"):
 		return ".bmp"
-	case strings.Contains(contentType, "gif"):
+	case strings.Contains(contentType, "image/gif"):
 		return ".gif"
 	default:
 		return ""
