@@ -7,13 +7,11 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/admpub/errors"
@@ -91,51 +89,6 @@ var (
 		},
 	}
 )
-
-var CachedWatermarkFileData = sync.Map{}
-
-func DeleteCachedWatermarkFileData(keys ...string) {
-	for _, key := range keys {
-		CachedWatermarkFileData.Delete(key)
-	}
-}
-
-func ClearCachedWatermarkFileData() {
-	CachedWatermarkFileData.Range(func(key, _ interface{})bool{
-		CachedWatermarkFileData.Delete(key)
-		return true
-	})
-}
-
-// GetRemoteWatermarkFileData 获取远程水印图片文件数据
-func GetRemoteWatermarkFileData(fileURL string) (FileReader, error) {
-	value, ok := CachedWatermarkFileData.Load(fileURL)
-	if ok {
-		if f, y := value.(*WatermarkData); y {
-			return f.File, nil
-		}
-	}
-	file, err := ReadRemoteWatermarkFile(fileURL)
-	if err != nil {
-		return file, err
-	}
-	CachedWatermarkFileData.Store(fileURL, NewWatermarkData(file))
-	return file, err
-}
-
-// ReadRemoteWatermarkFile 读取远程水印图片文件
-func ReadRemoteWatermarkFile(fileURL string) (multipart.File, error) {
-	file, err := godl.Open(fileURL, DefaultWatermarkFileDownloadOptions)
-	if err != nil {
-		return nil, errors.WithMessage(err, fileURL)
-	}
-	defer file.Close()
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, errors.WithMessage(err, fileURL)
-	}
-	return Bytes2file(b), err
-}
 
 // NewWatermark 设置水印的相关参数。
 // path为水印文件的路径；
