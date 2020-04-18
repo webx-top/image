@@ -11,10 +11,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+	"io/ioutil"
 
 	"github.com/admpub/errors"
 	"golang.org/x/image/bmp"
 	_ "golang.org/x/image/webp"
+	godl "github.com/admpub/go-download"
+	"github.com/webx-top/com"
 )
 
 // Pos 水印的位置
@@ -45,19 +49,51 @@ type Watermark struct {
 	pos     Pos         // 水印的位置
 }
 
+// FileReader 文件读取接口
+type FileReader interface {
+	io.Closer
+	io.Reader
+	io.Seeker
+}
+
 var (
 	// ErrUnsupportedWatermarkType 水印图片格式不支持
 	ErrUnsupportedWatermarkType = errors.New(`水印图片格式不支持`)
 	// ErrInvalidPos 水印位置不正确
 	ErrInvalidPos = errors.New(`水印位置不正确`)
 	// DefaultHTTPSystemOpen 水印文件默认打开方式
-	DefaultHTTPSystemOpen = func(name string) (http.File, error) {
+	DefaultHTTPSystemOpen = func(name string) (FileReader, error) {
+		if strings.Contains(name, `://`) {
+			return ReadRemoteWatermarkFile(name)
+		}
 		fp, err := os.Open(name)
 		return fp, err
 	}
 	// WatermarkOpen 水印文件打开方式
 	WatermarkOpen = DefaultHTTPSystemOpen
+	// DefaultWatermarkFileDownloadClient 默认水印文件下载客户端
+	DefaultWatermarkFileDownloadClient = com.HTTPClientWithTimeout(30*time.Second)
+	// DefaultWatermarkFileDownloadOptions 默认水印文件下载选项
+	DefaultWatermarkFileDownloadOptions = &godl.Options{
+		Client: func() http.Client {
+			return *DefaultWatermarkFileDownloadClient
+		},
+	}
 )
+
+// ReadRemoteWatermarkFile 读取远程水印图片文件
+func ReadRemoteWatermarkFile(fileURL string) (FileReader, error) {
+	file, err := godl.Open(fileURL, DefaultWatermarkFileDownloadOptions)
+	if err != nil {
+		return nil, errors.WithMessage(err, fileURL)
+	}
+	defer file.Close()
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, errors.WithMessage(err, fileURL)
+	}
+	return Bytes2file(b), err
+}
 
 // NewWatermark 设置水印的相关参数。
 // path为水印文件的路径；
