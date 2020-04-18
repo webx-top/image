@@ -81,13 +81,13 @@ func FileToBase64(srcFile string) ([]byte, error) {
 // Bytes2file 直接转 multipart.File
 func Bytes2file(b []byte) multipart.File {
 	r := io.NewSectionReader(bytes.NewReader(b), 0, int64(len(b)))
-	return sectionReadCloser{r}
+	return SectionReadCloser{r}
 }
 
-type sectionReadCloser struct {
+type SectionReadCloser struct {
 	*io.SectionReader
 }
 
-func (rc sectionReadCloser) Close() error {
+func (rc SectionReadCloser) Close() error {
 	return nil
 }

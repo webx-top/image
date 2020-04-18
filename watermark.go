@@ -7,18 +7,20 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
-	"io/ioutil"
 
 	"github.com/admpub/errors"
-	"golang.org/x/image/bmp"
-	_ "golang.org/x/image/webp"
 	godl "github.com/admpub/go-download"
 	"github.com/webx-top/com"
+	"golang.org/x/image/bmp"
+	_ "golang.org/x/image/webp"
 )
 
 // Pos 水印的位置
@@ -49,6 +51,15 @@ type Watermark struct {
 	pos     Pos         // 水印的位置
 }
 
+func NewWatermarkData(f multipart.File) *WatermarkData {
+	return &WatermarkData{File: f, Time: time.Now()}
+}
+
+type WatermarkData struct {
+	File multipart.File
+	Time time.Time
+}
+
 // FileReader 文件读取接口
 type FileReader interface {
 	io.Closer
@@ -64,7 +75,7 @@ var (
 	// DefaultHTTPSystemOpen 水印文件默认打开方式
 	DefaultHTTPSystemOpen = func(name string) (FileReader, error) {
 		if strings.Contains(name, `://`) {
-			return ReadRemoteWatermarkFile(name)
+			return GetRemoteWatermarkFileData(name)
 		}
 		fp, err := os.Open(name)
 		return fp, err
@@ -72,7 +83,7 @@ var (
 	// WatermarkOpen 水印文件打开方式
 	WatermarkOpen = DefaultHTTPSystemOpen
 	// DefaultWatermarkFileDownloadClient 默认水印文件下载客户端
-	DefaultWatermarkFileDownloadClient = com.HTTPClientWithTimeout(30*time.Second)
+	DefaultWatermarkFileDownloadClient = com.HTTPClientWithTimeout(30 * time.Second)
 	// DefaultWatermarkFileDownloadOptions 默认水印文件下载选项
 	DefaultWatermarkFileDownloadOptions = &godl.Options{
 		Client: func() http.Client {
@@ -81,8 +92,39 @@ var (
 	}
 )
 
+var CachedWatermarkFileData = sync.Map{}
+
+func DeleteCachedWatermarkFileData(keys ...string) {
+	for _, key := range keys {
+		CachedWatermarkFileData.Delete(key)
+	}
+}
+
+func ClearCachedWatermarkFileData() {
+	CachedWatermarkFileData.Range(func(key, _ interface{})bool{
+		CachedWatermarkFileData.Delete(key)
+		return true
+	})
+}
+
+// GetRemoteWatermarkFileData 获取远程水印图片文件数据
+func GetRemoteWatermarkFileData(fileURL string) (FileReader, error) {
+	value, ok := CachedWatermarkFileData.Load(fileURL)
+	if ok {
+		if f, y := value.(*WatermarkData); y {
+			return f.File, nil
+		}
+	}
+	file, err := ReadRemoteWatermarkFile(fileURL)
+	if err != nil {
+		return file, err
+	}
+	CachedWatermarkFileData.Store(fileURL, NewWatermarkData(file))
+	return file, err
+}
+
 // ReadRemoteWatermarkFile 读取远程水印图片文件
-func ReadRemoteWatermarkFile(fileURL string) (FileReader, error) {
+func ReadRemoteWatermarkFile(fileURL string) (multipart.File, error) {
 	file, err := godl.Open(fileURL, DefaultWatermarkFileDownloadOptions)
 	if err != nil {
 		return nil, errors.WithMessage(err, fileURL)
