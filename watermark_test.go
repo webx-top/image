@@ -10,7 +10,7 @@ import (
 
 func TestWatermark(t *testing.T) {
 	watermarkFile := filepath.Join(os.Getenv("GOPATH"), `src/github.com/admpub/nging/public/assets/backend/images/nging-gear.png`)
-	wm, err := NewWatermark(watermarkFile, 0, TopLeft)
+	wm, err := NewWatermark(watermarkFile, 0, TopRight)
 	if err != nil {
 		t.Fatal(err)
 	}
