@@ -33,8 +33,6 @@ const (
 	Center
 )
 
-const sniffLen = 512
-
 // 允许做水印的图片
 var watermarkExts = []string{
 	".gif", ".jpg", ".jpeg", ".png",
