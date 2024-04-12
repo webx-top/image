@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"os"
 )
@@ -17,7 +16,7 @@ func Base64ToFile(base64Data string, file string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(file, b, 0666)
+	return os.WriteFile(file, b, 0666)
 }
 
 // Base64ToBuffer base64 -> buffer
@@ -85,13 +84,13 @@ func ToBase64(subImg *image.YCbCr) ([]byte, error) {
 
 // FileToBase64 imgFile -> base64
 func FileToBase64(srcFile string) ([]byte, error) {
-	ff, err := ioutil.ReadFile(srcFile)
+	ff, err := os.ReadFile(srcFile)
 	if err != nil {
 		return nil, err
 	}
 	dist := make([]byte, 5000000)       //数据缓存
 	base64.StdEncoding.Encode(dist, ff) // 文件转base64
-	//_ = ioutil.WriteFile("./output2.jpg.txt", dist, 0666) //直接写入到文件就ok完活了。
+	//_ = os.WriteFile("./output2.jpg.txt", dist, 0666) //直接写入到文件就ok完活了。
 	return dist, nil
 }
 

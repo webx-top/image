@@ -7,7 +7,6 @@ import (
 	"image/draw"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -131,7 +130,7 @@ func TextImage(opt *TextImageOptions) (*image.RGBA, error) {
 	if v, ok := fontCache.Load(opt.FontFile); ok {
 		font = v.(*truetype.Font)
 	} else {
-		fontBytes, err := ioutil.ReadFile(opt.FontFile)
+		fontBytes, err := os.ReadFile(opt.FontFile)
 		if err != nil {
 			return nil, err
 		}

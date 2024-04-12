@@ -1,7 +1,7 @@
 package image
 
 import (
-	"io/ioutil"
+	"io"
 	"sync"
 
 	"github.com/admpub/errors"
@@ -84,7 +84,7 @@ func ReadRemoteWatermarkFile(fileURL string) ([]byte, error) {
 		return nil, errors.WithMessage(err, fileURL)
 	}
 	defer file.Close()
-	b, err := ioutil.ReadAll(file)
+	b, err := io.ReadAll(file)
 	if err != nil {
 		return nil, errors.WithMessage(err, fileURL)
 	}

@@ -1,5 +1,7 @@
-package webp
+//go:build !vips
+// +build !vips
 
+package webp
 
 import (
 	"bytes"
@@ -8,26 +10,26 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"strings"
 	"net/http"
+	"strings"
 
-	"github.com/chai2010/webp"
 	"github.com/admpub/errors"
-	"golang.org/x/image/bmp"
 	"github.com/admpub/log"
+	"github.com/pcpl2/go-webp"
+	"golang.org/x/image/bmp"
 )
 
 func Encode(r io.Reader, quality float32) (buf *bytes.Buffer, err error) {
 	buf = bytes.NewBuffer(nil)
 	var (
 		img image.Image
-		b = make([]byte, 512)
+		b   = make([]byte, 512)
 	)
 	_, err = r.Read(b)
 	if err != nil {
 		return
 	}
-	if rs ,ok := r.(io.ReadSeeker); ok {
+	if rs, ok := r.(io.ReadSeeker); ok {
 		rs.Seek(0, 0)
 	}
 	contentType := http.DetectContentType(b)
@@ -48,8 +50,8 @@ func Encode(r io.Reader, quality float32) (buf *bytes.Buffer, err error) {
 		return
 	}
 	options := &webp.Options{
-		Lossless: false, 
-		Quality: quality,
+		Lossless: false,
+		Quality:  quality,
 	}
 	err = webp.Encode(buf, img, options)
 	return
